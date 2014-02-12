@@ -1,17 +1,27 @@
 package com.eleventigers.app;
 
+import android.app.Activity;
+import android.hardware.Camera;
+import android.os.Build;
 import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Surface;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.os.Build;
 
-public class MainActivity extends ActionBarActivity {
+import java.io.IOException;
+
+public class MainActivity extends ActionBarActivity implements SurfaceHolder.Callback {
+
+    private android.hardware.Camera mCamera;
+    private static final int CAMERA_ID = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,6 +32,30 @@ public class MainActivity extends ActionBarActivity {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, new PlaceholderFragment())
                     .commit();
+        }
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();  // Always call the superclass method first
+
+        // Get the Camera instance as the activity achieves full user focus
+        if (mCamera == null) {
+            initializeCamera(); // Local method to handle camera init
+            initializeHolder();
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();  // Always call the superclass method first
+
+        // Release the Camera because we don't need it when paused
+        // and other activities might need to use it.
+        if (mCamera != null) {
+            mCamera.release();
+            mCamera = null;
         }
     }
 
@@ -46,6 +80,44 @@ public class MainActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    private void initializeCamera() {
+        mCamera = android.hardware.Camera.open(CAMERA_ID);
+
+    }
+
+    private  void initializeHolder() {
+        SurfaceView mSurfaceView = (SurfaceView)findViewById(R.id.camera_surface);
+        SurfaceHolder mSurfaceHolder = mSurfaceView.getHolder();
+        if (mSurfaceHolder != null) {
+            if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+                mSurfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+            }
+            mSurfaceHolder.setSizeFromLayout();
+            mSurfaceHolder.addCallback(this);
+        }
+
+    }
+
+    @Override
+    public void surfaceChanged (SurfaceHolder holder, int format, int width, int height) {
+        if (mCamera != null) {
+            try {
+                setCameraDisplayOrientation(this, CAMERA_ID, mCamera);
+                mCamera.setPreviewDisplay(holder);
+                mCamera.startPreview();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public void surfaceCreated(SurfaceHolder holder){}
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder){}
+
+
     /**
      * A placeholder fragment containing a simple view.
      */
@@ -60,6 +132,31 @@ public class MainActivity extends ActionBarActivity {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
             return rootView;
         }
+    }
+
+    public static void setCameraDisplayOrientation(Activity activity,
+                                                   int cameraId, android.hardware.Camera camera) {
+        android.hardware.Camera.CameraInfo info =
+                new android.hardware.Camera.CameraInfo();
+        android.hardware.Camera.getCameraInfo(cameraId, info);
+        int rotation = activity.getWindowManager().getDefaultDisplay()
+                .getRotation();
+        int degrees = 0;
+        switch (rotation) {
+            case Surface.ROTATION_0: degrees = 0; break;
+            case Surface.ROTATION_90: degrees = 90; break;
+            case Surface.ROTATION_180: degrees = 180; break;
+            case Surface.ROTATION_270: degrees = 270; break;
+        }
+
+        int result;
+        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+            result = (info.orientation + degrees) % 360;
+            result = (360 - result) % 360;  // compensate the mirror
+        } else {  // back-facing
+            result = (info.orientation - degrees + 360) % 360;
+        }
+        camera.setDisplayOrientation(result);
     }
 
 }
