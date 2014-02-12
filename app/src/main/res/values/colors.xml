@@ -2,4 +2,5 @@
 <resources>
     <color name="brand_primary">#14b8d5</color>
     <color name="actionbar_text">#fff</color>
+    <color name="actionbar_fade">#5014b8d5</color>
 </resources>
