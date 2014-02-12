@@ -15,6 +15,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import java.io.IOException;
 
@@ -57,6 +58,18 @@ public class MainActivity extends ActionBarActivity implements SurfaceHolder.Cal
             mCamera.release();
             mCamera = null;
         }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Toast.makeText(this, "Stopping", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Toast.makeText(this, "Coming back", Toast.LENGTH_SHORT).show();
     }
 
 
