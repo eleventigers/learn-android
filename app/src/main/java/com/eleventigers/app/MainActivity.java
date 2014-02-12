@@ -1,6 +1,7 @@
 package com.eleventigers.app;
 
 import android.app.Application;
+import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
@@ -44,12 +45,28 @@ public class MainActivity extends ActionBarActivity {
             case R.id.action_search:
             case R.id.action_settings:
                 notifyMenuOptionSelection(item);
+                switchActivityByMenuItem(item);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
+    public void switchActivityByMenuItem(MenuItem item) {
+        Intent intent;
+
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                intent = new Intent(this, SettingsActivity.class);
+                break;
+            default:
+                return;
+        }
+
+        if(intent != null){
+            startActivity(intent);
+        }
+    }
 
     public void notifyMenuOptionSelection(MenuItem item) {
         Toast.makeText(getApplicationContext(), item.getTitle(), Toast.LENGTH_SHORT)
