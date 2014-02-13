@@ -15,14 +15,10 @@
         android:layout_weight="1"/>
 
     <ScrollView
+        android:id="@+id/scroller_main"
         android:layout_weight="2"
         android:layout_width="0dp"
         android:layout_height="wrap_content">
-        <fragment android:name="com.eleventigers.app.ArticleFragment"
-            android:id="@+id/headlines_fragment"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            tools:layout="@layout/article_view" />
     </ScrollView>
 
 
