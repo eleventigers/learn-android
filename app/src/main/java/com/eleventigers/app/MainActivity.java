@@ -1,5 +1,7 @@
 package com.eleventigers.app;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
@@ -10,6 +12,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.os.Build;
+import android.widget.Toast;
+
+import java.util.prefs.Preferences;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -23,6 +28,26 @@ public class MainActivity extends ActionBarActivity {
                     .add(R.id.container, new PlaceholderFragment())
                     .commit();
         }
+
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        Context context = getApplicationContext();
+        SharedPreferences pref = getPreferences(context.MODE_PRIVATE);
+        String testKey = pref.getString(getResources().getString(R.string.test_key_pref), "old");
+
+        if (testKey.equals("old")) {
+            Toast.makeText(this, testKey, Toast.LENGTH_SHORT).show();
+            testKey = "updated";
+            SharedPreferences.Editor editor = pref.edit();
+            editor.putString(getString(R.string.test_key_pref), testKey);
+            editor.commit();
+        }
+
+        Toast.makeText(this, testKey, Toast.LENGTH_SHORT).show();
     }
 
 

@@ -4,5 +4,6 @@
     <string name="app_name">learn-android</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="test_key_pref">com.eleventigers.app.PREF_TEST_KEY</string>
 
 </resources>
