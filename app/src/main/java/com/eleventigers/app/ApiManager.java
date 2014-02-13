@@ -20,6 +20,11 @@ public class ApiManager {
     public static class Contributor {
         String login;
         int contributions;
+
+        @Override
+        public String toString(){
+            return this.login;
+        }
     }
 
     interface GitHub {

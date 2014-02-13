@@ -10,6 +10,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.os.Build;
+import android.widget.Adapter;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
 import java.util.List;
@@ -44,14 +50,7 @@ public class MainActivity extends ActionBarActivity {
                               @Override
                               public void call(List<ApiManager.Contributor> contributors) {
 
-                                  for (ApiManager.Contributor contributor : contributors) {
-                                      Toast.makeText(
-                                              MainActivity.this,
-                                              contributor.login,
-                                              Toast.LENGTH_SHORT)
-                                              .show();
-                                  }
-
+                              populateList(contributors);
 
                               }
                           }, new Action1<Throwable>() {
@@ -86,6 +85,43 @@ public class MainActivity extends ActionBarActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void populateList(final List<ApiManager.Contributor> contributors) {
+
+        final ListView listview = (ListView) findViewById(R.id.listview);
+
+
+        final ArrayAdapter<ApiManager.Contributor> adapter = new ArrayAdapter<ApiManager.Contributor>(
+                this,
+                android.R.layout.simple_list_item_1,
+                android.R.id.text1,
+                contributors);
+
+        listview.setAdapter(adapter);
+
+        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(
+                    AdapterView<?> parent,
+                    final View view,
+                    int position, long id
+            ) {
+                final ApiManager.Contributor item = (ApiManager.Contributor) parent.getItemAtPosition(position);
+                view.animate().setDuration(500).scaleY(0f)
+                        .withEndAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                contributors.remove(item);
+                                adapter.notifyDataSetChanged();
+                                view.setScaleY(1);
+                            }
+                        });
+            }
+
+        });
+
     }
 
     /**
