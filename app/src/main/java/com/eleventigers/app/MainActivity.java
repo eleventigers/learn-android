@@ -10,6 +10,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.os.Build;
+import android.widget.Toast;
+
+import java.util.List;
+
+import retrofit.RestAdapter;
+import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.util.functions.Action1;
+import rx.util.functions.Func1;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -25,10 +34,43 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        ApiManager.getContributors("square", "retrofit")
+               .observeOn(AndroidSchedulers.mainThread())
+               .subscribe(new Action1<List<ApiManager.Contributor>>() {
+                              @Override
+                              public void call(List<ApiManager.Contributor> contributors) {
+
+                                  for (ApiManager.Contributor contributor : contributors) {
+                                      Toast.makeText(
+                                              MainActivity.this,
+                                              contributor.login,
+                                              Toast.LENGTH_SHORT)
+                                              .show();
+                                  }
+
+
+                              }
+                          }, new Action1<Throwable>() {
+                              @Override
+                              public void call(Throwable error) {
+                                  Toast.makeText(
+                                          MainActivity.this,
+                                          error.getMessage(),
+                                          Toast.LENGTH_SHORT)
+                                          .show();
+                              }
+                          }
+               );
+
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        
+
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
