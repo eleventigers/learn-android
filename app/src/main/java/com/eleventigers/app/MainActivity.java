@@ -1,5 +1,9 @@
 package com.eleventigers.app;
 
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.net.Uri;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
@@ -10,6 +14,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.os.Build;
+
+import java.util.List;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -25,6 +31,28 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
+
+    @Override
+    public  void onStart() {
+        super.onStart();
+
+        // Map point based on address
+        Uri location = Uri.parse("geo:0,0?q=1600+Amphitheatre+Parkway,+Mountain+View,+California");
+        // Or map point based on latitude/longitude
+        // Uri location = Uri.parse("geo:37.422219,-122.08364?z=14"); // z param is zoom level
+        Intent mapIntent = new Intent(Intent.ACTION_VIEW, location);
+
+        // Always use string resources for UI text.
+        // This says something like "Share this photo with"
+        String title = getResources().getString(R.string.chooser_title);
+           // Create intent to show chooser
+        Intent chooser = Intent.createChooser(mapIntent, title);
+
+        // Verify the intent will resolve to at least one activity
+        if (mapIntent.resolveActivity(getPackageManager()) != null) {
+            startActivity(chooser);
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
