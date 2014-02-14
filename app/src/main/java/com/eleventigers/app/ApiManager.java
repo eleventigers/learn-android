@@ -1,57 +1,54 @@
+/**
+ * Created by eleventigers on 13/02/14.
+ */
+
 package com.eleventigers.app;
 
-import java.util.List;
-
+import com.eleventigers.app.models.ScenesCollection;
+import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 import retrofit.http.GET;
-import retrofit.http.Path;
+import retrofit.http.Query;
 import rx.Observable;
 import rx.Observer;
 import rx.concurrency.Schedulers;
 import rx.subscriptions.Subscriptions;
 
-/**
- * Created by eleventigers on 13/02/14.
- */
 public class ApiManager {
 
-    private static final String API_URL = "https://api.github.com";
+    private static final String API_URL = "foobar";
+    private static final String API_KEY = "foobar";
 
-    public static class Contributor {
-        String login;
-        int contributions;
-
-        @Override
-        public String toString(){
-            return this.login;
-        }
-    }
-
-    interface GitHub {
-        @GET("/repos/{owner}/{repo}/contributors")
-        List<Contributor> contributors(
-                @Path("owner") String owner,
-                @Path("repo") String repo
+    interface Seene {
+        @GET("/scenes/popular")
+        ScenesCollection popularScenes(
+                @Query("count") Integer count,
+                @Query("page") Integer page
         );
     }
+
+    private static final RequestInterceptor requestInterceptor = new RequestInterceptor() {
+        @Override
+        public void intercept(RequestFacade request) {
+            request.addHeader("User-Agent", "Android-Sample-App");
+            request.addHeader("api-key", API_KEY);
+        }
+    };
 
     private static final RestAdapter restAdapter = new RestAdapter.Builder()
             .setEndpoint(API_URL)
             .setLogLevel(RestAdapter.LogLevel.FULL)
+            .setRequestInterceptor(requestInterceptor)
             .build();
 
-    private static final GitHub github = restAdapter.create(GitHub.class);
+    private static final Seene seene = restAdapter.create(Seene.class);
 
-    public static GitHub getService() {
-        return github;
-    }
-
-    public static Observable<List<Contributor>> getContributors(final String owner, final String repo) {
-        return Observable.create(new Observable.OnSubscribeFunc<List<Contributor>>() {
+    public static Observable<ScenesCollection> getPopularScenes(final Integer count, final Integer page) {
+        return Observable.create(new Observable.OnSubscribeFunc<ScenesCollection>() {
             @Override
-            public rx.Subscription onSubscribe(Observer<? super List<Contributor>> observer) {
+            public rx.Subscription onSubscribe(Observer<? super ScenesCollection> observer) {
                 try {
-                    observer.onNext(github.contributors(owner, repo));
+                    observer.onNext(seene.popularScenes(count, page));
                     observer.onCompleted();
                 } catch (Exception e) {
                     observer.onError(e);

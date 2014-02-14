@@ -1,7 +1,6 @@
 package com.eleventigers.app;
 
 import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -9,22 +8,22 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.os.Build;
-import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.eleventigers.app.adapters.ScenesListViewAdapter;
+import com.eleventigers.app.models.Scene;
+import com.eleventigers.app.models.ScenesCollection;
+
+import butterknife.InjectView;
+import butterknife.ButterKnife;
 import java.util.List;
 
-import retrofit.RestAdapter;
-import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.util.functions.Action1;
-import rx.util.functions.Func1;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -44,13 +43,18 @@ public class MainActivity extends ActionBarActivity {
     public void onStart() {
         super.onStart();
 
-        ApiManager.getContributors("square", "retrofit")
+        ApiManager.getPopularScenes(60, 1)
                .observeOn(AndroidSchedulers.mainThread())
-               .subscribe(new Action1<List<ApiManager.Contributor>>() {
+               .subscribe(new Action1<ScenesCollection>() {
                               @Override
-                              public void call(List<ApiManager.Contributor> contributors) {
+                              public void call(ScenesCollection collection) {
+                                  Toast.makeText(
+                                          MainActivity.this,
+                                          "success",
+                                          Toast.LENGTH_SHORT)
+                                          .show();
 
-                              populateList(contributors);
+                                 populateList(collection.getModels());
 
                               }
                           }, new Action1<Throwable>() {
@@ -58,7 +62,7 @@ public class MainActivity extends ActionBarActivity {
                               public void call(Throwable error) {
                                   Toast.makeText(
                                           MainActivity.this,
-                                          error.getMessage(),
+                                          "error: " + error.getMessage(),
                                           Toast.LENGTH_SHORT)
                                           .show();
                               }
@@ -87,16 +91,14 @@ public class MainActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void populateList(final List<ApiManager.Contributor> contributors) {
+    private void populateList(final List<Scene> scenes) {
 
         final ListView listview = (ListView) findViewById(R.id.listview);
 
-
-        final ArrayAdapter<ApiManager.Contributor> adapter = new ArrayAdapter<ApiManager.Contributor>(
+        final ScenesListViewAdapter adapter = new ScenesListViewAdapter(
                 this,
                 android.R.layout.simple_list_item_1,
-                android.R.id.text1,
-                contributors);
+                scenes);
 
         listview.setAdapter(adapter);
 
@@ -108,16 +110,18 @@ public class MainActivity extends ActionBarActivity {
                     final View view,
                     int position, long id
             ) {
-                final ApiManager.Contributor item = (ApiManager.Contributor) parent.getItemAtPosition(position);
-                view.animate().setDuration(500).scaleY(0f)
-                        .withEndAction(new Runnable() {
-                            @Override
-                            public void run() {
-                                contributors.remove(item);
-                                adapter.notifyDataSetChanged();
-                                view.setScaleY(1);
-                            }
-                        });
+                final Scene item = (Scene) parent.getItemAtPosition(position);
+                view.animate()
+                    .setDuration(500)
+                    .scaleY(0f)
+                    .withEndAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            scenes.remove(item);
+                            adapter.notifyDataSetChanged();
+                            view.setScaleY(1);
+                        }
+                    });
             }
 
         });
@@ -129,14 +133,32 @@ public class MainActivity extends ActionBarActivity {
      */
     public static class PlaceholderFragment extends Fragment {
 
+        @InjectView(R.id.contrib_title) TextView contribTitle;
+
         public PlaceholderFragment() {
         }
 
         @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                Bundle savedInstanceState) {
+        public View onCreateView(
+                LayoutInflater inflater,
+                ViewGroup container,
+                Bundle savedInstanceState
+        ) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+            ButterKnife.inject(this, rootView);
             return rootView;
+        }
+
+        @Override
+        public void onStart() {
+            super.onStart();
+            contribTitle.setText("Testing");
+        }
+
+        @Override
+        public void onDestroyView() {
+            super.onDestroyView();
+            ButterKnife.reset(this);
         }
     }
 
